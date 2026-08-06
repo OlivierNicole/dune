@@ -44,8 +44,8 @@ include C
 let self_scoped name = { name; scope = Self }
 let package_scoped name package_name = { name; scope = Package package_name }
 
-let of_macro_invocation ~loc ({ Pform.Macro_invocation.macro; _ } as macro_invocation) =
-  match macro with
+let of_macro_invocation ~loc ({ Pform.Macro_invocation.macro'; _ } as macro_invocation) =
+  match macro' with
   | Pkg_self ->
     let variable_name = Pform.Macro_invocation.Args.whole macro_invocation in
     Ok (self_scoped (Package_variable_name.of_string variable_name))
@@ -63,11 +63,11 @@ let of_macro_invocation ~loc ({ Pform.Macro_invocation.macro; _ } as macro_invoc
 let to_macro_invocation { name; scope } =
   match scope with
   | Self ->
-    { Pform.Macro_invocation.macro = Pkg_self
+    { Pform.Macro_invocation.macro' = Pkg_self
     ; payload = Pform.Payload.of_args [ Package_variable_name.to_string name ]
     }
   | Package package_name ->
-    { Pform.Macro_invocation.macro = Pkg
+    { Pform.Macro_invocation.macro' = Pkg
     ; payload =
         Pform.Payload.of_args
           [ Package_name.to_string package_name; Package_variable_name.to_string name ]

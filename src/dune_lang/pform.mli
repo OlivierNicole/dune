@@ -150,7 +150,7 @@ end
 
 module Macro_invocation : sig
   type t =
-    { macro : Macro.t
+    { macro' : Macro.t
     ; payload : Payload.t
     }
 

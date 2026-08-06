@@ -909,7 +909,7 @@ module Action_expander = struct
           Make_prog.which loc context ~path
         in
         Ok [ Value.Path make ]
-      | Macro ({ macro = Pkg | Pkg_self; _ } as macro_invocation) ->
+      | Macro ({ macro' = Pkg | Pkg_self; _ } as macro_invocation) ->
         expand_pkg_macro ~loc paths depends macro_invocation
       | _ -> Expander0.isn't_allowed_in_this_position ~source
     ;;

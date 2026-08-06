@@ -116,7 +116,7 @@ let bin_dep_name (dep : Dep_conf.t) =
   match dep with
   | File s ->
     (match String_with_vars.pform_only s with
-     | Some (Macro ({ macro = Bin; _ } as m)) ->
+     | Some (Macro ({ macro' = Bin; _ } as m)) ->
        Some (Pform.Macro_invocation.Args.whole m)
      | _ -> None)
   | _ -> None

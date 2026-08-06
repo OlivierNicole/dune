@@ -250,7 +250,7 @@ let remove_future_syntax (t : 'a t) ~(for_ : Pp_flag_consumer.t) v
             (String_with_vars.make_pform
                loc
                (Macro
-                  { Pform.Macro_invocation.macro = Bin
+                  { Pform.Macro_invocation.macro' = Bin
                   ; payload = Pform.Payload.of_args [ "ocaml-syntax-shims" ]
                   }))
             ((match for_ with

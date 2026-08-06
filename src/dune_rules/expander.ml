@@ -756,7 +756,7 @@ let expand_pform_macro
       (macro_invocation : Pform.Macro_invocation.t)
   =
   let s = Pform.Macro_invocation.Args.whole macro_invocation in
-  match macro_invocation.macro with
+  match macro_invocation.macro' with
   | Pkg ->
     let loc = Dune_lang.Template.Pform.loc source in
     Need_full_expander (fun t -> With (expand_pkg_macro ~loc t macro_invocation))

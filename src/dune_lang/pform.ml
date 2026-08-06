@@ -421,28 +421,28 @@ end
 
 module Macro_invocation = struct
   type t =
-    { macro : Macro.t
+    { macro' : Macro.t
     ; payload : Payload.t
     }
 
-  let to_dyn { macro; payload } =
-    Dyn.record [ "macro", Macro.to_dyn macro; "payload", Payload.to_dyn payload ]
+  let to_dyn { macro'; payload } =
+    Dyn.record [ "macro", Macro.to_dyn macro'; "payload", Payload.to_dyn payload ]
   ;;
 
-  let compare { macro; payload } t =
+  let compare { macro'; payload } t =
     let open Ordering.O in
-    let= () = Macro.compare macro t.macro in
+    let= () = Macro.compare macro' t.macro' in
     Payload.compare payload t.payload
   ;;
 
   module Args = struct
     let whole { payload; _ } = Payload.Args.whole payload
 
-    let lsplit2 { payload; macro } loc =
+    let lsplit2 { payload; macro' } loc =
       Payload.Args.lsplit2 payload loc
       |> Result.map_error ~f:(fun (user_message : User_message.t) ->
         let paragraphs =
-          match Macro.encode macro with
+          match Macro.encode macro' with
           | Ok name ->
             let header = Pp.textf "Incorrect arguments for macro %s." name in
             header :: user_message.paragraphs
@@ -544,8 +544,8 @@ let encode_to_latest_dune_lang_version t =
      with
      | None -> Pform_was_deleted
      | Some name -> Success { name; payload = None })
-  | Macro { macro; payload } ->
-    (match Macro.encode macro with
+  | Macro { macro'; payload } ->
+    (match Macro.encode macro' with
      | Error `Pform_was_deleted -> Pform_was_deleted
      | Ok name -> Success { name; payload = Some payload })
 ;;
@@ -606,8 +606,8 @@ module Env = struct
 
   let pkg =
     let macros =
-      let macro (x : Macro.t) = No_info x in
-      String.Map.of_list_exn [ "pkg", macro Pkg; "pkg-self", macro Pkg_self ]
+      let macro' (x : Macro.t) = No_info x in
+      String.Map.of_list_exn [ "pkg", macro' Pkg; "pkg-self", macro' Pkg_self ]
     in
     let vars =
       let pkg =
@@ -649,7 +649,7 @@ module Env = struct
 
   let initial =
     let macros =
-      let macro (x : Macro.t) = No_info x in
+      let macro' (x : Macro.t) = No_info x in
       let artifact x =
         let name = Artifact.ext x |> Filename.Extension.drop_dot in
         let version =
@@ -660,21 +660,21 @@ module Env = struct
         name, since ~version (Macro.Artifact x)
       in
       String.Map.of_list_exn
-        ([ "exe", macro Exe
-         ; "bin", macro Bin
-         ; "lib", macro (Lib { lib_exec = false; lib_private = false })
-         ; "libexec", macro (Lib { lib_exec = true; lib_private = false })
+        ([ "exe", macro' Exe
+         ; "bin", macro' Bin
+         ; "lib", macro' (Lib { lib_exec = false; lib_private = false })
+         ; "libexec", macro' (Lib { lib_exec = true; lib_private = false })
          ; ( "lib-private"
            , since ~version:(2, 1) (Macro.Lib { lib_exec = false; lib_private = true }) )
          ; ( "libexec-private"
            , since ~version:(2, 1) (Macro.Lib { lib_exec = true; lib_private = true }) )
-         ; "lib-available", macro Lib_available
+         ; "lib-available", macro' Lib_available
          ; "bin-available", since ~version:(3, 0) Macro.Bin_available
-         ; "file-available", macro File_available
-         ; "version", macro Version
-         ; "read", macro Read
-         ; "read-lines", macro Read_lines
-         ; "read-strings", macro Read_strings
+         ; "file-available", macro' File_available
+         ; "version", macro' Version
+         ; "read", macro' Read
+         ; "read-lines", macro' Read_lines
+         ; "read-strings", macro' Read_strings
          ; "dep", since ~version:(1, 0) Macro.Dep
          ; "path", renamed_in ~version:(1, 0) ~new_name:"dep" Macro.Dep
          ; ( "findlib"
@@ -683,11 +683,11 @@ module Env = struct
                ~new_name:"lib"
                (Macro.Lib { lib_exec = false; lib_private = false }) )
          ; "path-no-dep", deleted_in ~version:(1, 0) Macro.Path_no_dep
-         ; "ocaml-config", macro Ocaml_config
+         ; "ocaml-config", macro' Ocaml_config
          ; "env", since ~version:(1, 4) Macro.Env
          ; "ppx", since ~version:(3, 21) Macro.Ppx
          ; "pkg", since ~version:(3, 24) Macro.Pkg
-         ; "rocq", macro Rocq_config
+         ; "rocq", macro' Rocq_config
          ]
          @ List.map ~f:artifact Artifact.all)
     in
@@ -860,7 +860,7 @@ module Env = struct
   let parse t (pform : Template.Pform.t) =
     match pform.payload with
     | None -> Var (parse t.vars t.extensions pform)
-    | Some payload -> Macro { macro = parse t.macros t.extensions pform; payload }
+    | Some payload -> Macro { macro' = parse t.macros t.extensions pform; payload }
   ;;
 
   let unsafe_parse_without_checking_version map (pform : Template.Pform.t) =
@@ -877,7 +877,7 @@ module Env = struct
     match pform.payload with
     | None -> Var (unsafe_parse_without_checking_version t.vars pform)
     | Some payload ->
-      Macro { macro = unsafe_parse_without_checking_version t.macros pform; payload }
+      Macro { macro' = unsafe_parse_without_checking_version t.macros pform; payload }
   ;;
 
   let to_dyn { syntax_lang = _; syntax_version = _; extensions; vars; macros } =
@@ -910,7 +910,7 @@ module Env = struct
     String.Map.union
       (String.Map.map vars ~f:(fun x -> Var (With_versioning_info.get_data x)))
       (String.Map.map macros ~f:(fun x ->
-         Macro { macro = With_versioning_info.get_data x; payload = Payload.of_string "" }))
+         Macro { macro' = With_versioning_info.get_data x; payload = Payload.of_string "" }))
       ~f:(fun _ _ _ -> assert false)
   ;;
 end
